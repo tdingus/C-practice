@@ -96,11 +96,15 @@ int main() {
   Node* n2 = new Node(5);
   Node* n3 = new Node(4);
   Node* n4 = new Node(6);
+  Node* n5 = new Node(1);
   //n1.next = &n2;
   //n3.next = &n4;
   //  print_ll(merge(&n1,&n3));
   n1->next = n2;
   n2->next = n3;
   n3->next = n4;
-  print_ll(recursive_break(n1, 4));
+  n4->next = n5;
+  print_ll(recursive_break(n1, 5));
+
+  delete n1; delete n2; delete n3; delete n4; delete n5;
 }
