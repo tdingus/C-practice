@@ -7,6 +7,8 @@
   attempt 1:
   merge sort, should be n log n
 
+  tried doing this with recursion, but recursion is not constant space (disregard this file)
+
  */
 
 #include <iostream>
