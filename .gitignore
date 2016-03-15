@@ -7,8 +7,7 @@
 *.o
 *.so
 *.out
-*.cpp~
-.gitignore~
+*~
 
 # Packages #
 ############
