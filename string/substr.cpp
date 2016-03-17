@@ -28,8 +28,8 @@ std::vector<int> KMP::populate_overlap(const std::string &pattern)
 { // O(n^2) over substr length (improvable?)
   std::vector<int> overlap_list(pattern.size());
   overlap_list[0] = 0; // first value is always 0
-  int match = 0; // how much of the prefix matches the suffix
-  int it = 1; // position in string
+  unsigned int match = 0; // how much of the prefix matches the suffix
+  unsigned int it = 1; // position in string
   while (it < pattern.size()) {
     while (pattern[match] == pattern[it]) { // if you spot a match, go ham
       match++;
@@ -48,8 +48,8 @@ std::vector<int> KMP::populate_overlap(const std::string &pattern)
 bool KMP::check_substr(const std::string& text, const std::string& pattern) 
 {
   std::vector<int> overlap_list = KMP::populate_overlap(pattern); //O(m)
-  int match = 0;
-  int it = 0; // position in text
+  unsigned int match = 0;
+  unsigned int it = 0; // position in text
   while (it < text.size()) {
     while (pattern[match] == text[it] && it < text.size()) {
       match++;
@@ -78,11 +78,11 @@ struct KMP_overlap_test_case
     if (/*pass*/ output == exp_output) std::cout << " pass" << std::endl;
     else {
       std::cout << " fail" << std::endl;
-      for(int i = 0; i < output.size(); i++) {
+      for(unsigned int i = 0; i < output.size(); i++) {
 	std::cout << output[i];
       }
       std::cout << std::endl;
-      for(int i = 0; i < exp_output.size(); i++) {
+      for(unsigned int i = 0; i < exp_output.size(); i++) {
 	std::cout << exp_output[i];
       }
       std::cout << std::endl;
@@ -116,7 +116,7 @@ int main()
     KMP_overlap_test_case(std::string("aaabaaa"), {0,1,2,0,1,2,3},std::string("aaabaaa")), 
     KMP_overlap_test_case(std::string("abcde"), {0,0,0,0,0}, std::string("abcde"))};
   std::cout << "testing overlap:" << std::endl;
-  for (int i = 0; i < tests.size(); i++) {
+  for (unsigned int i = 0; i < tests.size(); i++) {
     tests[i].run();
   }
   std::cout << std::endl << "testing substr:" << std::endl;
@@ -127,7 +127,7 @@ int main()
     KMP_substr_test_case(std::string("bananano"), std::string("nano"), true),
     KMP_substr_test_case(std::string("abcde"), std::string("fghi"), false)
   };
-  for (int i = 0; i < tests2.size(); i++) {
+  for (unsigned int i = 0; i < tests2.size(); i++) {
     tests2[i].run();
   }
 }
