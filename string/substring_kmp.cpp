@@ -36,7 +36,7 @@ std::vector<int> KMP::populate_overlap(const std::string &pattern)
       overlap_list[it] = match;
       it++; // keep iterating until it doesn't work
     }
-    if (match > 0) match = 0; // when it doesnt work, try again from beginning
+    if (match > 0) match = overlap_list[match-1]; // when it doesnt work, try again from beginning
     if (match == 0) it++; // otherwise its a lost cause
   }
   return overlap_list;
@@ -114,7 +114,9 @@ int main()
   std::vector<KMP_overlap_test_case> tests = {
     KMP_overlap_test_case(std::string("cocacola"),{0,0,1,0,1,2,0,0},std::string("cocacola")), 
     KMP_overlap_test_case(std::string("aaabaaa"), {0,1,2,0,1,2,3},std::string("aaabaaa")), 
-    KMP_overlap_test_case(std::string("abcde"), {0,0,0,0,0}, std::string("abcde"))};
+    KMP_overlap_test_case(std::string("abcde"), {0,0,0,0,0}, std::string("abcde")),
+    KMP_overlap_test_case(std::string("nabnatnabnab"), {0,0,0,1,2,0,1,2,3,4,5,3}, std::string("nabnatnabnab"))
+  };
   std::cout << "testing overlap:" << std::endl;
   for (unsigned int i = 0; i < tests.size(); i++) {
     tests[i].run();
