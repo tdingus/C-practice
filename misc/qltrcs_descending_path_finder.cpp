@@ -21,36 +21,42 @@ struct Point
 {
   int x;
   int y;
-  bool operator==(const Point& other)
+  
+
+  struct PointHash
   {
-    return (other.x == x && other.y == y);
-  }
-  static size_t point_hash(const Point& pt) // used for unordered_map
+    std::size_t operator()(const Point& pt) const
+    {
+      return std::hash<int>()(pt.x) ^ std::hash<int>()(pt.y);
+    }
+  };
+  
+  struct PointEqual
   {
-    return pt.x + 100*pt.y;
-  }
+    bool operator()(const Point& lhs, const Point& rhs) const
+    {
+      return (lhs.x == rhs.x) && (lhs.y == rhs.y);
+    }
+  };
+
+  Point() : x(0), y(0) {}
   Point(int _x, int _y) : x(_x), y(_y) {}
 };
 
-size_t point_hash(const Point& pt)
-{
-  return std::hash<int>()(pt.x) ^ std::hash<int>()(pt.y);
-}
-
 struct PathFinder
 {
-  static std::unordered_map<Point, int> countChildren(const int** array);
+  static std::unordered_map<Point, int,Point::PointHash, Point::PointEqual> 
+  countChildren(const std::initializer_list<std::initializer_list<int>>& input);
 };
 
-std::unordered_map<Point, int> PathFinder::countChildren(const int** _array)
+std::unordered_map<Point, int, Point::PointHash, Point::PointEqual>
+PathFinder::countChildren(const std::initializer_list<std::initializer_list<int>>& input)
 {
-  std::unordered_map<Point, int, decltype(&point_hash)> 
-    childrenMap(100, point_hash);
-  std::vector<std::vector<int> > array(_array);
+  std::unordered_map<Point, int, Point::PointHash, Point::PointEqual> childrenMap(100);
   return childrenMap;
 }
 
 int main()
 {
-
+  PathFinder::countChildren({{1,2,3},{2,3,4},{5,6,7}});
 }
