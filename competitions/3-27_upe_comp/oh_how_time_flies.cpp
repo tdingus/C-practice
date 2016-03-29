@@ -22,6 +22,8 @@
 
 struct Point // used for dijkstras
 {
+  // usually, I would use underscore for member data to make it special. 
+  // also, conceptually, a point has no distance. I wonder if it is possible to remove distance from this struct.
   int x, y, distance;
   Point() : x(0), y(0), distance(999) {}
   Point(const Point& other) : x(other.x), y(other.y), distance(other.distance) {}
@@ -30,9 +32,11 @@ struct Point // used for dijkstras
   bool operator<(const Point& other) const {return distance < other.distance;} // implemented for the pq
 };
 
+// a little descripton what PathFinder does
 struct PathFinder
 {
-  std::vector<std::string> map;
+  // you may use a const referenced map if you are not changing it and do not need a copy
+  const std::vector<std::string>& map; // oh. it is not a map, how about locations?
   std::vector<std::vector<std::string> > pathMap; // values here are valid paths ie. d\nd\nu
   std::vector<std::vector<bool> > completeMap; // used for the dijkstra's algo
   Point start, end;
@@ -66,6 +70,8 @@ std::string PathFinder::run()
     //std::cout << "next: " << next.x << "," << next.y << std::endl;
     if (completeMap[next.x][next.y]) continue;
     else completeMap[next.x][next.y] = true;
+    // the next four if section is very similar if not the same consider using a function to 
+    // replace them, so it becomes four lines, instead.
     if (!completeMap[next.x+1][next.y] && !checkWall(map[next.x+1][next.y]) &&
 	(pathMap[next.x+1][next.y].size() > (pathMap[next.x][next.y] + "d\n").size() || pathMap[next.x+1][next.y] == "-1")) {
       pathMap[next.x+1][next.y] = pathMap[next.x][next.y] + "d\n";
