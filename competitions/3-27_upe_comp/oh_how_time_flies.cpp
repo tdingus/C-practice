@@ -20,27 +20,56 @@
 #include <queue>
 #include <unordered_map>
 
-struct Point // used for dijkstras
+struct Point
 {
-  int x, y, distance;
-  Point() : x(0), y(0), distance(999) {}
-  Point(const Point& other) : x(other.x), y(other.y), distance(other.distance) {}
-  Point(int _x, int _y) : x(_x), y(_y), distance(999) {}
-  Point(int _x, int _y, int _d) : x(_x), y(_y), distance(_d) {}
-  bool operator<(const Point& other) const {return distance < other.distance;} // implemented for the pq
+  unsigned int x, y;
+  Point() : x(0), y(0) {}
+  Point(const Point& other) : x(other.x), y(other.y) {}
+  Point(unsigned int _x, int _y) : x(_x), y(_y) {}
+};
+
+struct DijkstraPoint : public Point
+{
+  unsigned int distance; // distance from start (in terms of moves)
+  std::string shortestPath; // should be of length distance, contents will be in form d\nr\nl etc
+  bool completed; // in the algorithm, if it is popped from the queue
+  DijkstraPoint() : Point(), distance(999), shortestPath(""), completed(false) {}
+  DijkstraPoint(unsigned int _x, unsigned int _y) : Point(_x, _y), distance(999), shortestPath(""), completed(false) {}
+  DijkstraPoint(unsigned int _x, unsigned int _y, unsigned int _d) : Point(_x, _y), distance(_d), shortestPath(""), completed(false) {}
 };
 
 struct PathFinder
 {
-  std::vector<std::string> map;
-  std::vector<std::vector<std::string> > pathMap; // values here are valid paths ie. d\nd\nu
-  std::vector<std::vector<bool> > completeMap; // used for the dijkstra's algo
-  Point start, end;
-  PathFinder(const std::vector<std::string >& _map, Point _s, Point _e) :
-    map(_map), start(_s), end(_e) 
+  
+  struct Comparator
   {
-    pathMap = std::vector<std::vector<std::string> >(map.size(), std::vector<std::string>(map[0].size(), "-1"));  
-    completeMap = std::vector<std::vector<bool> >(map.size(), std::vector<bool>(map[0].size(), false));
+    bool operator()(const DijkstraPoint* one, const DijkstraPoint* other)
+    {
+      return one->distance > other->distance;
+    }
+  };
+
+  std::vector<std::string> room;
+  std::priority_queue<DijkstraPoint*, std::vector<DijkstraPoint*>, Comparator> pt_pq;
+  Point start, end;
+  std::vector<std::vector<DijkstraPoint> > roomPts; // represents points in room
+
+  PathFinder(const std::vector<std::string >& _room, Point _s, Point _e) :
+    room(_room), 
+    pt_pq(std::priority_queue<DijkstraPoint*, std::vector<DijkstraPoint*>, Comparator>()),
+    start(_s), end(_e), 
+    roomPts(std::vector<std::vector<DijkstraPoint> >(_room.size(), std::vector<DijkstraPoint>(_room[0].size())))
+  {
+    for (unsigned int i = 0; i < roomPts.size(); i++) {
+      for (unsigned int j = 0; j < roomPts.size(); j++) {
+	if (i == start.x && j == start.y) {
+	  roomPts[i][j] = DijkstraPoint(i,j,0);
+	}
+	else {
+	  roomPts[i][j] = DijkstraPoint(i,j);
+	}
+      }
+    }
   }
 
   bool checkWall(char in);
@@ -53,58 +82,47 @@ bool PathFinder::checkWall(char in)
   return false;
 }
 
-std::string PathFinder::run()
+std::string PathFinder::run() // use dijkstra's algorithm
 {
-  std::priority_queue<Point> pt_pq;
-  pathMap[start.x][start.y] = "";
-  start.distance = 0;
-  pt_pq.push(start);
-  //std::cout << start.x << "," << start.y << "," << end.x << "," << end.y << std::endl;
-  while (!completeMap[end.x][end.y] && !pt_pq.empty()) { 
-    Point next = pt_pq.top();
-    pt_pq.pop();
-    //std::cout << "next: " << next.x << "," << next.y << std::endl;
-    if (completeMap[next.x][next.y]) continue;
-    else completeMap[next.x][next.y] = true;
-    if (!completeMap[next.x+1][next.y] && !checkWall(map[next.x+1][next.y]) &&
-	(pathMap[next.x+1][next.y].size() > (pathMap[next.x][next.y] + "d\n").size() || pathMap[next.x+1][next.y] == "-1")) {
-      pathMap[next.x+1][next.y] = pathMap[next.x][next.y] + "d\n";
-      pt_pq.push(Point(next.x+1, next.y, next.distance + 1));
-    }
-    if (!completeMap[next.x-1][next.y] && !checkWall(map[next.x-1][next.y]) &&
-	(pathMap[next.x-1][next.y].size() > (pathMap[next.x][next.y] + "u\n").size() || pathMap[next.x-1][next.y] == "-1")) {
-      pathMap[next.x-1][next.y] = pathMap[next.x][next.y] + "u\n";
-      pt_pq.push(Point(next.x-1, next.y, next.distance + 1));
-    }
-    if (!completeMap[next.x][next.y+1] && !checkWall(map[next.x][next.y+1]) &&
-	(pathMap[next.x][next.y+1].size() > (pathMap[next.x][next.y] + "r\n").size() || pathMap[next.x][next.y+1] == "-1")) {
-      pathMap[next.x][next.y+1] = pathMap[next.x][next.y] + "r\n";
-      pt_pq.push(Point(next.x, next.y+1, next.distance + 1));
-    }
-    if (!completeMap[next.x][next.y-1] && !checkWall(map[next.x][next.y-1]) &&
-	(pathMap[next.x][next.y-1].size() > (pathMap[next.x][next.y] + "l\n").size() || pathMap[next.x][next.y-1] == "-1")) {
-      pathMap[next.x][next.y-1] = pathMap[next.x][next.y] + "l\n";
-      pt_pq.push(Point(next.x, next.y-1, next.distance + 1));
+  DijkstraPoint* next;
+  pt_pq.push(&roomPts[start.x][start.y]);
+  while (!(roomPts[end.x][end.y].completed) && !pt_pq.empty() && 
+	 ((next = pt_pq.top())->distance != 999)) { 
+    pt_pq.pop(); // pop current shortest path (at start will be 0)
+    
+    // then check paths
+    std::vector<std::string> paths = {"d\n", "u\n", "l\n", "r\n"};
+    std::vector<int> modifiers = {1, -1, 0, 0};
+    for (unsigned int i = 0; i < paths.size(); i++) {
+      int child_x = next->x + modifiers[i];
+      int child_y = next->y + modifiers[paths.size()-1-i];
+      if (!(roomPts[child_x][child_y].completed) &&
+	  (roomPts[child_x][child_y].distance > next->distance + 1) &&
+	  !(checkWall(room[child_x][child_y]))) {
+	roomPts[child_x][child_y].distance = next->distance + 1;
+	roomPts[child_x][child_y].shortestPath = next->shortestPath + paths[i];
+	pt_pq.push(&roomPts[child_x][child_y]);
+      }
     }
   }
-  return pathMap[end.x][end.y];
+  return roomPts[end.x][end.y].shortestPath;
 }
 
 int main() {
   int size = 10;
   std::string line;
-  std::vector<std::string> map;
+  std::vector<std::string> room;
   
   std::unordered_map<char, Point> points;
   std::vector<char> special_pts = {'s', '1', '2', '3', '4', '5', 'x'};
 
   for (int a = 0; a < size; a++) {
     std::getline(std::cin, line);
-    map.push_back(line);
+    room.push_back(line);
     for (unsigned int x = 0; x < line.size(); x++) {
-      for (unsigned int y = 0; y < special_pts.size(); y++) {
-	if (line[x] == special_pts[y]) {
-	  points[special_pts[y]] = Point(map.size()-1, x);
+      for(unsigned int y = 0; y < special_pts.size(); y++) {
+	if (line[x] == special_pts[y]){
+	  points[line[x]] = Point(room.size()-1, x);
 	}
       }
     }
@@ -112,11 +130,14 @@ int main() {
 
   std::string final_solution = "";
   for (unsigned int i = 0; i < special_pts.size()-1; i++) {
-    //    std::cout << points[special_pts[i]].x << std::endl;
-    PathFinder pt(map, points[special_pts[i]], points[special_pts[i+1]]);
+    PathFinder pt(room, points[special_pts[i]], points[special_pts[i+1]]);
+    std::string output = pt.run();
+    if (output == "") {
+      std::cout << special_pts[i+1] << " cannot be reached with this setup, aborting" << std::endl;
+      break;
+    }
     final_solution += pt.run();
   }
-
   std::cout << final_solution << std::endl;
   return 0;
 }
