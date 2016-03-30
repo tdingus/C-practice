@@ -1,11 +1,58 @@
 /*
   Problem: https://www.hackerrank.com/contests/upe-hard/challenges/oh-how-time-flies
-  <solution incomplete>
+  
   In essence, you're given a board that represents your room (an 8x8 square),
   and there's 5 objects you need to grab in order (represented by chars 1-5).
   Your starting position is labelled s, exit (after grabbing the 5th) is x.
   
   There are also walls in the room, and you can obviously not cross through those.
+  
+  Sample input:
+  +--------+
+  |s|4     |
+  | |  ==  |
+  | |  ==5 |
+  | |  =x  |
+  | |  ====|
+  | |3     |
+  | |===== |
+  |1     2 |
+  +--------+
+  Sample output:
+  d
+  d
+  d
+  d
+  d
+  d
+  d
+  r
+  r
+  r
+  r
+  r
+  r
+  r
+  u
+  u
+  l
+  l
+  l
+  l
+  l
+  u
+  u
+  u
+  u
+  u
+  r
+  r
+  r
+  r
+  d
+  d
+  d
+  l
 
   Solution: This can be broken up into subproblems: this is equal to the shortest path
   from s to 1, 1 to 2, 2 to 3, 3 to 4, etc. Each of these subproblems can be solved with an
