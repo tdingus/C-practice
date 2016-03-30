@@ -156,21 +156,30 @@ std::string PathFinder::run() // use dijkstra's algorithm
 }
 
 int main() {
-  int size = 10;
-  std::string line;
-  std::vector<std::string> room;
-  
+  const std::vector<std::string> room =
+  {
+    "+--------+",
+    "|s|4     |",
+    "| |  ==  |",
+    "| |  ==5 |",
+    "| |  =x  |",
+    "| |  ====|",
+    "| |3     |",
+    "| |===== |",
+    "|1     2 |",
+    "+--------+"
+  };
+
   std::unordered_map<char, Point> points;
   std::vector<char> special_pts = {'s', '1', '2', '3', '4', '5', 'x'};
 
-  for (int a = 0; a < size; a++) {
-    std::getline(std::cin, line);
-    room.push_back(line);
+  for (int a = 0; a < room.size(); a++) {
+    std::string line = room[a];
     for (unsigned int x = 0; x < line.size(); x++) {
       for(unsigned int y = 0; y < special_pts.size(); y++) {
-	if (line[x] == special_pts[y]){
-	  points[line[x]] = Point(room.size()-1, x);
-	}
+        if (line[x] == special_pts[y]) {
+          points[line[x]] = Point(room.size()-1, x);
+        }
       }
     }
   }
