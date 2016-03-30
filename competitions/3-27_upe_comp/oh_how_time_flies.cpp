@@ -97,12 +97,16 @@ struct PathFinder
   };
 
   std::vector<std::string> room;
+  const unsigned int room_width;
+  const unsigned int room_length;
+ 
   std::priority_queue<DijkstraPoint*, std::vector<DijkstraPoint*>, Comparator> pt_pq;
   Point start, end;
   std::vector<std::vector<DijkstraPoint> > roomPts; // represents points in room
 
-  PathFinder(const std::vector<std::string >& _room, Point _s, Point _e) :
-    room(_room), 
+  PathFinder(const std::vector<std::string >& _room, unsigned int width,
+             unsigned int length, Point _s, Point _e) :
+    room(_room), room_width(width), room_length(length),
     pt_pq(std::priority_queue<DijkstraPoint*, std::vector<DijkstraPoint*>, Comparator>()),
     start(_s), end(_e), 
     roomPts(std::vector<std::vector<DijkstraPoint> >(_room.size(), std::vector<DijkstraPoint>(_room[0].size())))
@@ -143,6 +147,13 @@ std::string PathFinder::run() // use dijkstra's algorithm
     for (unsigned int i = 0; i < paths.size(); i++) {
       int child_x = next->x + modifiers[i];
       int child_y = next->y + modifiers[paths.size()-1-i];
+      // don't know if the following logic is correct, but it does not crash
+      // at least.
+      if ((child_x >= room_width) || (child_y >= room_length))
+      {   
+        continue;
+      }
+      
       if (!(roomPts[child_x][child_y].completed) &&
 	  (roomPts[child_x][child_y].distance > next->distance + 1) &&
 	  !(checkWall(room[child_x][child_y]))) {
@@ -156,16 +167,19 @@ std::string PathFinder::run() // use dijkstra's algorithm
 }
 
 int main() {
-  int size = 10;
   std::string line;
-  std::vector<std::string> room;
+  std::vector<std::string> room; // statically initialize the room
   
   std::unordered_map<char, Point> points;
   std::vector<char> special_pts = {'s', '1', '2', '3', '4', '5', 'x'};
-
-  for (int a = 0; a < size; a++) {
-    std::getline(std::cin, line);
-    room.push_back(line);
+  unsigned int room_width = 0;
+  
+  for (int a = 0; a < room.size(); a++) {
+    //std::getline(std::cin, line); remove the tediousness
+    //room.push_back(line);
+    line = room[i];
+    if (room_width == 0)
+      room_width = line.size();
     for (unsigned int x = 0; x < line.size(); x++) {
       for(unsigned int y = 0; y < special_pts.size(); y++) {
 	if (line[x] == special_pts[y]){
@@ -177,7 +191,7 @@ int main() {
 
   std::string final_solution = "";
   for (unsigned int i = 0; i < special_pts.size()-1; i++) {
-    PathFinder pt(room, points[special_pts[i]], points[special_pts[i+1]]);
+    PathFinder pt(room, room_width, room.size(), points[special_pts[i]], points[special_pts[i+1]]);
     std::string output = pt.run();
     if (output == "") {
       std::cout << special_pts[i+1] << " cannot be reached with this setup, aborting" << std::endl;
@@ -185,6 +199,8 @@ int main() {
     }
     final_solution += pt.run();
   }
+  // now it should be a lot easier to test. my first run returns:
+  // "1 cannot be reached with this setup, aborting"
   std::cout << final_solution << std::endl;
   return 0;
 }
