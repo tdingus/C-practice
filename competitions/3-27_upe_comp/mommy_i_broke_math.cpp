@@ -37,6 +37,7 @@
 #include <set>
 #include <vector>
 #include <unordered_map>
+#include <sstream>
 
 struct Solver;
 struct Expression;
@@ -100,7 +101,120 @@ Attempt Solver::run()
 // attempt to solve the equation
 struct Expression
 {
+  std::vector<char> operators;
   std::string expression;
+  int value;
+  bool correct; // true if expression can be evaluated, false otherwise (ie. mismatch paren)
+
+  Expression(const std::string& expr) : expression(expr), value(0), correct(false) {}
+
+  Expression(const std::string& original, const std::vector<char>& all_chars, const std::vector<char>& _operators,
+	     const std::vector<int>& argswap) : operators(_operators), expression(original), value(0), correct(false) {
+    for (int i = 0; i < expression.size() i++) {
+      for (int j = 0; j < all_chars.size(); j++) {
+	if (expression[i] == all_chars[j]) {
+	  expression[i] = operators[argswap[j]];
+	  break;
+	}
+      } 
+    }
+  }
+
+  int evaluate();
+
+private: // for internal PEMDAS functions, used by evaluate()
+  bool evaluate_parens();
+  bool evaluate_exponents();
+  bool evaluate_mult_div();
+};
+
+// go through and evaluate pemdas, returns flag false if failed, otherwise value in value
+bool Expression::evaluate() {
+  // first start recursing with parentheses
+  if (!evaluate_parens()) return false;
+  // now in each recursed expression, tokenize and then evaluate
+  std::vector<std::string> tokens;
+  std::stringstream ss; ss << expression;
+  std::string word;
+  while (ss >> word) {
+    tokens.push_back(word);
+  }
+  
+  if (!evaluate_exponents() || !evaluate_mult_div() || ) return false;
+
+  correct = true;
+  return true;
+}
+
+bool Expression::evaluate_parens() // first check ( ... ), evaluate recursively
+{
+  for (int i = 0; i < expression.size(); i++) {
+    if (expression[i] == '(') {
+      int paren_count = 1;
+      int start_index = i+1;
+      while (paren_count > 0 && i < expression.size()) {
+	i++;
+	if (expression[i] == '(') paren_count++;
+	else if (expression[i] == ')') paren_count--;
+      }
+      if (paren_count > 0) return false; // mismatch parens
+      else {
+	Expression e = Expression(expression.substr(start_index, i-start_index)); // recursively solve parens
+	e.evaluate();
+	if (e.correct) {
+	  std::stringstream ss;
+	  ss << expression.substr(start_index) << e.value << expression.substr(i+1);
+	  expression = ss.str();
+	  i = 0; // restart from beginning just to be safe
+	}
+      }
+    }
+  }
+  return true; // after evaluating, there should be no parens left in expression
+}
+
+bool Expression::evaluate_exponents() // then check #^#
+{
+  int recent_number_index = -1;
+  int recent_number_size = 0;
+
+  //bool found_valid_expo_start = false; // if encounters ### ^, this is true.
+  std::stringstream ss;
+  for (int i = 0; i < expression.size(); i++) {
+    if (expression[i] == ' ') continue;
+    if (expression[i] == '-' || (expression[i] >= '0' && expression[i] <= '9')) {
+      recent_number_index = i;
+      recent_number_size = 1;
+      found_num = true;
+      i++;
+
+      while (i < expression.size() && expression[i] >= '0' && expression[i] <= '9') {
+	recent_number_size++;
+	i++;
+      }
+    }
+    else {
+
+      if (expression[i] == '^') { 
+	if (recent_number_index == -1 || recent_number_size == 0) return false; // break out, incorrect exp
+	ss << expression.substr(recent_number_index, recent_number_size);
+	int value;
+	ss >> value; // get a in a^b
+	i++;
+	recent_number_index = -1; recent_number_size = 0;
+	while (i < expression.size() && expression[i] == ' ') i++;
+	while (
+      }
+      else { // encountered anything, / * +, whatever
+	
+      }
+    }
+  }
+}
+
+bool Expression::evaluate_mult_div()
+{
+  
 }
 
 // attempt algorithm:
@@ -114,7 +228,8 @@ struct Attempt
   bool run(char equals); // pass in which character is equals
 
   char equals_char;
-  std::set<char> 
+  
+  
 
 };
 
