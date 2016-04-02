@@ -169,7 +169,7 @@ int main() {
     for (unsigned int x = 0; x < line.size(); x++) {
       for(unsigned int y = 0; y < special_pts.size(); y++) {
 	if (line[x] == special_pts[y]){
-	  points[line[x]] = Point(room.size()-1, x);
+	  points[line[x]] = Point(a, x); // original code is a bug.
 	}
       }
     }
