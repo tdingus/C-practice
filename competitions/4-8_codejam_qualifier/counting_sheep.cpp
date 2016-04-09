@@ -99,16 +99,11 @@ unsigned long SheepCounter::getLastCount(const unsigned long n)
 
 int main()
 {
-  unsigned int input_size;
-  std::cin >> input_size;
-  std::vector<unsigned long> inputs;
-  for (unsigned int i = 0; i < input_size; i++) {
-    unsigned long input;
-    std::cin >> input;
-    inputs.push_back(input);
-  }
-  for (unsigned int i = 0; i < inputs.size(); i++) {
-    if (inputs[i] > 0) std::cout << "Case #" << i+1 << ": " << SheepCounter::getLastCount(inputs[i]) << std::endl;
-    else std::cout << "Case #" << i+1 << ": INSOMNIA" << std::endl;
-  }
+    // one line code to get input, instead of 8 lines!!!
+    std::vector<unsigned long> inputs = { 5, 0, 1, 2, 11, 1692 };
+
+    for (unsigned int i = 0; i < inputs.size(); i++) {
+        if (inputs[i] > 0) std::cout << "Case #" << i+1 << ": " << SheepCounter::getLastCount(inputs[i]) << std::endl;
+        else std::cout << "Case #" << i+1 << ": INSOMNIA" << std::endl;
+    }
 }
